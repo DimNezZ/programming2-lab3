@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lab_3.Models
+namespace Lab_3.Models.JSON
 {
     internal class Set
     {

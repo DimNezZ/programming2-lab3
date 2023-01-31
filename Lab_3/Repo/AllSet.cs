@@ -6,8 +6,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Lab_3.Models.JSON;
 
-namespace Lab_3.Models
+namespace Lab_3.Repo
 {
     internal class AllSet
     {

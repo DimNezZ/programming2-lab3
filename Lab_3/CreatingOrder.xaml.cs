@@ -14,8 +14,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Lab_3.Models;
-using static System.Net.Mime.MediaTypeNames;
+using System.Reflection.Emit;
+using System.IO;
+using Lab_3.Repo;
+using Lab_3.Models.JSON;
+using Lab_3.Models.DTO;
 
 namespace Lab_3
 {
@@ -25,11 +28,19 @@ namespace Lab_3
     public partial class CreatingOrder : Window
 
     {
-        private AllSet allSet = AllSet.getInstance();
+        private readonly AllSet allSet = AllSet.getInstance();
+        private readonly AllSushi allSushi = AllSushi.getInstance();
+        private readonly AllSauces allSauces = AllSauces.getInstance();
+        private readonly AllOrder allOrder = AllOrder.getInstance();
+
+        private readonly List<CollectedOrder> orders = new List<CollectedOrder>();
+
+
         public CreatingOrder()
         {
             InitializeComponent();
             ComboBoxNameSetOrder.ItemsSource = allSet.GetAllSet();
+            orders.Clear();
         }
 
         private void ButtonCreateNewSet_Click(object sender, RoutedEventArgs e)
@@ -40,12 +51,104 @@ namespace Lab_3
 
         private void ComboBoxNameSetOrder_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            AllSet selectedSet = (AllSet)ComboBoxNameSetOrder.SelectedItem;
+            Set selectedSet = (Set)ComboBoxNameSetOrder.SelectedItem;
         }
 
-        private void ComboBoxSizeSetOrder_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            int count = int.Parse((string)LabelSouceCount.Content); 
+            if (count >= 4)
+            {
+                ButtonAddSauce.IsEnabled = false;
+            }
+            count += 1;
+            ButtonReduceSauce.IsEnabled = true;
+            LabelSouceCount.Content = count.ToString();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            int count = int.Parse((string)LabelSouceCount.Content);
+            if (count <= 1)
+            {
+                ButtonReduceSauce.IsEnabled = false;
+            }
+            count -= 1;
+            ButtonAddSauce.IsEnabled = true;
+            LabelSouceCount.Content = count.ToString();
+        }
+
+        private void ButtonAddOrder_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedSet = ComboBoxNameSetOrder.SelectedItem;
+            if (selectedSet != null)
+            {
+                Set set = (Set)selectedSet;
+                int sushiCount = 0;
+                int sauceCount = int.Parse((string)LabelSouceCount.Content);
+
+                switch (ComboBoxSizeSetOrder.SelectedIndex)
+                {
+                    case 0:
+                        sushiCount = 10;
+                        break;
+                    case 1:
+                        sushiCount = 20;
+                        break;
+                    case 2:
+                        sushiCount = 30;
+                        break;
+                }
+
+                CollectedOrder order = new CollectedOrder(set, sushiCount, sauceCount);
+                List<string> orderParams = new List<string>
+                {
+                    $"Название: {order.GetSet().Name}",
+                    $"Суши в наборе: {order.GetSushi()?.Name}",
+                    $"Размер: {ComboBoxSizeSetOrder.Text}",
+                    $"Порций соуса: {sauceCount}"
+                };
+                if (order.GetSauces().Count > 0)
+                {
+                    orderParams.Add($"Соусы в наборе: {string.Join(", ", order.GetSauces().Select(sauce => sauce.Name).ToList())}");
+                }
+
+                ListBoxOrder.Items.Add(string.Join("\n", orderParams));
+                orders.Add(order);
+            }
+
+            double totalPrice = 0.0;
+            foreach (CollectedOrder order in orders)
+            {
+                totalPrice += order.GetPrice();
+            }
+            LabelTotalCostOrder.Content = $"Общая стоимость: {Math.Round(totalPrice)}";
+        }
+
+        private void ButtonSaveOrder_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (CollectedOrder order in orders)
+            {
+                allOrder.AddInList(order.GetModel());
+            }
+
+            allOrder.SaveToFile();
+            ComboBoxSizeSetOrder.SelectedIndex = -1;
+            ComboBoxNameSetOrder.SelectedIndex = -1;
+            LabelTotalCostOrder.Content = "Общая стоимость:";
+            LabelSouceCount.Content = "0";
+            ButtonAddOrder.IsEnabled = false;
+            ButtonReduceSauce.IsEnabled = false;
+            orders.Clear();
+            ListBoxOrder.Items.Clear();
+        }
+        private void Grid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (ComboBoxSizeSetOrder.SelectedIndex != -1 && ComboBoxNameSetOrder.SelectedIndex != -1)
+            {
+                ButtonAddOrder.IsEnabled = true;
+            }
         }
     }
 }

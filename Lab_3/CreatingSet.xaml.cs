@@ -12,8 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Text.Json;
-using Lab_3.Models;
 using System.Text.Json.Serialization;
+using Lab_3.Repo;
+using Lab_3.Models.JSON;
 
 namespace Lab_3
 {

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using Lab_3.Models;
 using System.Threading.Tasks;
 
-namespace Lab_3.Models
+namespace Lab_3.Models.JSON
 {
-
-    internal class Sushi
+    internal class Sauces
     {
         public int Id { get; set; }
         public string? Name { get; set; }
